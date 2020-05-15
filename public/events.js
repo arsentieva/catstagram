@@ -8,18 +8,20 @@ let newPicBtn = document.querySelector("#new-pic");
 let loaderDiv = document.querySelector(".loader");
 let image = document.querySelector(".cat-pic");
 let input = document.querySelector(".user-comment");
+let form = document.querySelector(".comment-form");
+let commentsDiv = document.querySelector(".comments");
 
 window.addEventListener("DOMContentLoaded", fetchImage);
 newPicBtn.addEventListener("click", fetchImage);
 upVoteBtn.addEventListener("click", upVote);
 downVoteBtn.addEventListener("click", downVote);
+form.addEventListener("submit", handleSubmit);
 
 function fetchImage() {
   startLoader();
   fetch("http://localhost:3000/kitten/image")
     .then(handleResponse)
     .then((data) => {
-      console.log(data);
       image.src = data.src;
     })
     .catch(handleError);
@@ -28,13 +30,32 @@ function fetchImage() {
 function upVote() {
   fetch("/kitten/upvote", { method: "PATCH" })
     .then(handleResponse)
-    .then(handleScore(true))
+    .then(handleScore)
     .catch(handleError);
 }
 function downVote() {
   fetch("/kitten/downvote", { method: "PATCH" })
     .then(handleResponse)
-    .then(handleScore(false)) //TODO to keep the counter
+    .then(handleScore) //TODO to keep the counter
+    .catch(handleError);
+}
+
+function handleSubmit() {
+  let comment = input.value;
+  debugger;
+  event.preventDefault();
+  fetch("/kitten/comments", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ comment }),
+  })
+    .then(handleResponse)
+    .then((data) => {
+      form.reset(); // this clears out the inputs it the form
+      handleComments(data);
+    })
     .catch(handleError);
 }
 
@@ -64,7 +85,21 @@ function handleError(error) {
   }
   alert(`Something went wrong! Please Try again!`);
 }
-
+function handleComments(data) {
+  debugger;
+  let comments = data.comments;
+  let comment = comments[comments.length - 1];
+  //   comments.forEach((comment) => {
+  //create a div
+  let div = document.createElement("div");
+  //add the comment to NodeTextContent
+  let commentContainer = document.createTextNode(`${comment}`);
+  //append the comment
+  div.appendChild(commentContainer);
+  //append to the parent div
+  commentsDiv.appendChild(div);
+  //   });
+}
 function startLoader() {
   loaderDiv.innerHTML = "Loading...";
 }
