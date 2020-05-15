@@ -1,3 +1,7 @@
+/***
+ * !!!The skeleton contains an Express server, an index.html page
+ * */
+
 const express = require("express");
 const path = require("path");
 const axios = require("axios");
@@ -22,7 +26,7 @@ const getRandomInt = () => {
 const potentialErrors = [
   "No cat for you!",
   "Sad day. No kitten here.",
-  "Please try again!"
+  "Please try again!",
 ];
 
 const generateRandomError = () => {
@@ -37,7 +41,7 @@ const generateRandomError = () => {
 
 const kitten = {
   score: 0,
-  comments: []
+  comments: [],
 };
 
 app.get("/", (req, res) => {
@@ -49,7 +53,7 @@ app.get("/kitten/image", (req, res) => {
     generateRandomError();
     axios
       .get("https://api.thecatapi.com/v1/images/search?size=small")
-      .then(image => {
+      .then((image) => {
         kitten.score = 0;
         kitten.comments = [];
         kitten.src = image.data[0].url;
