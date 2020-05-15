@@ -16,6 +16,7 @@ newPicBtn.addEventListener("click", fetchImage);
 upVoteBtn.addEventListener("click", upVote);
 downVoteBtn.addEventListener("click", downVote);
 form.addEventListener("submit", handleSubmit);
+commentsDiv.addEventListener("click", handleDelete);
 
 function fetchImage() {
   startLoader();
@@ -66,6 +67,7 @@ function handleScore(data) {
 
 function handleResponse(res) {
   stopLoader();
+  clearError();
   if (!res.ok) {
     throw Error(res.statusText);
   }
@@ -86,23 +88,49 @@ function handleError(error) {
   alert(`Something went wrong! Please Try again!`);
 }
 function handleComments(data) {
-  debugger;
-  let comments = data.comments;
-  let comment = comments[comments.length - 1];
-  //   comments.forEach((comment) => {
-  //create a div
-  let div = document.createElement("div");
-  //add the comment to NodeTextContent
-  let commentContainer = document.createTextNode(`${comment}`);
-  //append the comment
-  div.appendChild(commentContainer);
-  //append to the parent div
-  commentsDiv.appendChild(div);
-  //   });
+  //clear the main div container from its content
+  // this way when we get all the comments we do not have to
+  //figure out which one is new and which are old
+  commentsDiv.innerHTML = "";
+  data.comments.forEach((comment, index) => {
+    //create a div
+    let containerDiv = document.createElement("div");
+    containerDiv.className = "comment-container";
+
+    //store the comment in a <p> tag
+    let p = document.createElement("p");
+    p.appendChild(document.createTextNode(comment));
+
+    //add a button next to the comment
+    const deleteButton = document.createElement("button");
+    deleteButton.appendChild(document.createTextNode("Delete"));
+    deleteButton.className = "delete-button";
+    deleteButton.setAttribute("id", index);
+
+    // append to the parent div
+    containerDiv.appendChild(p);
+    containerDiv.appendChild(deleteButton);
+    commentsDiv.appendChild(containerDiv);
+  });
 }
+
+function handleDelete(event) {
+  console.log("was invoked");
+  if (event.target.tagName !== "BUTTON") return;
+
+  fetch(`/kitten/comments/${event.target.id}`, { method: "DELETE" })
+    .then(handleResponse)
+    .then((data) => handleComments(data))
+    .catch(handleError);
+}
+
 function startLoader() {
   loaderDiv.innerHTML = "Loading...";
 }
 function stopLoader() {
   loaderDiv.innerHTML = "";
 }
+
+const clearError = () => {
+  document.querySelector(".error").innerHTML = "";
+};
